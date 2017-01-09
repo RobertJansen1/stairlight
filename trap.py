@@ -55,12 +55,12 @@ def fade(trede, direction, step, delay=0):
       time.sleep(delay)
 
 def fix(state):
+  print 'applying temporary gpio fix'
   if state == 'off':
     for signal in (4,5,6,7,8,9,10,11,13,15,17,18,19):
       calc = 0
       value = str(calc + 1)
       channel = str(signal)
-      print 'applying off fix'
       call(["pigs", "p "+channel+" "+value])
       time.sleep(ndel)
       value = str(calc)
@@ -71,7 +71,6 @@ def fix(state):
       calc = valw
       value = str(calc + 1)
       channel = str(signal)
-      print 'applying on fix'
       call(["pigs", "p "+channel+" "+value])
       time.sleep(ndel)
       value = str(calc)
@@ -120,7 +119,8 @@ def up_to_down():
         print "ending loop"
         delay = time.time() + wait + wait + wait
       else:
-        print "not there yet"
+        remaining = delay - time.time()
+        print "not there yet " + str(remaining) + " seconds remaining"
     time.sleep(wait)
   print "done"
 
@@ -166,7 +166,8 @@ def down_to_up():
         print "ending loop"
         delay = time.time() + wait + wait + wait
       else:
-        print "not there yet"
+        remaining = delay - time.time()
+        print "not there yet " + str(remaining) + " seconds remaining"
     time.sleep(wait)
   print "done"
 
