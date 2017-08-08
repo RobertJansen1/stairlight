@@ -73,9 +73,9 @@ def fadenew(trede, color, src, dest, stepsize, delay=0):
   #print int(stepsize)
   if color == "red":
     pwm = red
-  if color == "blue":
+  elif color == "blue":
     pwm = blue
-  if color == "green":
+  elif color == "green":
     pwm = green
   else:
     #fallback to white
