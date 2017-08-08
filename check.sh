@@ -20,13 +20,13 @@ else
     sleep 2
     pigpiod -a1
     sleep 2
-    nohup python /opt/trap/trap.py > /dev/null & 
+    nohup python /opt/stairlight/trap.py > /dev/null & 
 fi
 DIFF2=$(diff /opt/trap/variables.py /opt/trap/diffvariables.py)
 if [ "$DIFF2" != "" ]
 then
     echo "Het trap-script is opnieuw afgetrapt.(variables)"
-    cp /opt/trap/variables.py /opt/trap/diffvariables.py
+    cp /opt/stairlight/variables.py /opt/stairlight/diffvariables.py
     rm -f  /run/shm/trap.log
     rm -f  /run/shm/trapdiff.log
     pkill -f pigpiod
@@ -36,5 +36,5 @@ then
     sleep 2
     pigpiod -a1
     sleep 2
-    nohup python /opt/trap/trap.py > /dev/null &
+    nohup python /opt/stairlight/trap.py > /dev/null &
 fi
