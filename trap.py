@@ -41,36 +41,14 @@ white = Adafruit_PCA9685.PCA9685(address=0x60, busnum=1)
 
 # Set frequency to 60hz, good for servos.
 # pick something between 24 and 1526hz
-red.set_pwm_freq(1000)
-blue.set_pwm_freq(1000)
-green.set_pwm_freq(1000)
-white.set_pwm_freq(1000)
+pwm_freq = 1524
+red.set_pwm_freq(150)
+blue.set_pwm_freq(150)
+green.set_pwm_freq(150)
+white.set_pwm_freq(150)
 
-# Configure min and max servo pulse lengths
-servo_min = 1050  # Min pulse length out of 4096
-servo_max = 4095  # Max pulse length out of 4096
-# -----------------------
-# Define some functions
-# -----------------------
-
-# non_used? Helper function to make setting a servo pulse width simpler.
-def set_servo_pulse(channel, pulse):
-    pulse_length = 1000000    # 1,000,000 us per second
-    pulse_length //= 60       # 60 Hz
-    print('{0}us per period'.format(pulse_length))
-    pulse_length //= 4096     # 12 bits of resolution
-    print('{0}us per bit'.format(pulse_length))
-    pulse *= 1000
-    pulse //= pulse_length
-    pwm.set_pwm(channel, 0, pulse)
 
 def fadenew(trede, color, src, dest, stepsize, delay=0):
-  #printing vars
-  #print trede
-  #print color
-  #print int(src)
-  #print int(dest)
-  #print int(stepsize)
   if color == "red":
     pwm = red
   elif color == "blue":
@@ -80,73 +58,32 @@ def fadenew(trede, color, src, dest, stepsize, delay=0):
   else:
     #fallback to white
     pwm = white
-  if src < dest:
+  if int(src) < int(dest):
     stepsize = -stepsize
   step = range(int(src),int(dest),int(stepsize))
   for i in (step):
     #print "setting "+str(trede)+" to "+str(i)
     pwm.set_pwm(int(trede), 0, int(i))
     time.sleep(delay)
+  pwm.set_pwm(int(trede), 0, int(dest))
+  
 
-def fade(trede, direction, step, delay=0):
-  if direction == 'on':
-    val = 0
-    #int(check_output(["pigs", "gdc " + trede]))
-    step = range(val,step,stepsize)
-    for i in (step):
-      f=int(i)
-      trede=int(trede)
-      #print i
-      #red.set_pwm(i, 0, 0)
-      #blue.set_pwm(i, 0, 0)
-      white.set_pwm(trede, 0, i)
-      #green.set_pwm(i, 0, 0)
-      time.sleep(delay)
-  else:
-    val = valw
-    #int(check_output(["pigs", "gdc " + trede]))
-    step = range (val,0,-stepsize)
-    #step=-step
-    for i in (step) + [0]:
-      f=int(i)
-      trede=int(trede)
-      #print i
-      white.set_pwm(trede, 0, i)
-      #call(["pigs", "p "+trede+" "+f])
-      time.sleep(delay)
-
-def fix(state):
-  print 'applying temporary gpio fix'
-  if state == 'off':
-    for signal in (4,5,6,7,8,9,10,11,13,15,17,18,19):
-      calc = 0
-      value = str(calc + 1)
-      channel = str(signal)
-      call(["pigs", "p "+channel+" "+value])
-      time.sleep(ndel)
-      value = str(calc)
-      call(["pigs", "p "+channel+" "+value])
-      time.sleep(ndel)
-  if state == 'on':
-    for signal in (4,5,6,7,8,9,10,11,13,15,17,18,19):
-      calc = valw
-      value = str(calc + 1)
-      channel = str(signal)
-      call(["pigs", "p "+channel+" "+value])
-      time.sleep(ndel)
-      value = str(calc)
-      call(["pigs", "p "+channel+" "+value])
-      time.sleep(ndel)
 
 def up_to_down():
   # This function starts the leds from up to down
   print "activating boven naar beneden"
   threads = []
-  for trede in (range(1,14)):
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'white', '0', valw, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'red', '0', valr, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'blue', '0', valb, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'green', '0', valg, stepsize)))
+  for trede in valgreen.keys():
+    for color in ('red','blue','green','white'):
+      if color == "red":
+        values = valred
+      elif color == "blue":
+        values = valblue
+      elif color == "green":
+        values = valgreen
+      else:
+        values = valwhite
+      threads.append(threading.Thread(target=fadenew, args=(trede, color, '0', values[trede], stepsize)))
 
   for thread in reversed(threads):
     thread.start()
@@ -154,12 +91,6 @@ def up_to_down():
 
   for thread in threads:
     thread.join();
-
-
-  #fix('on')
-  #fade(rgbr, 'on', valr)
-  #fade(rgbg, 'on', valg)
-  #fade(rgbb, 'on', valb)
 
   delay = time.time() + timeout
   while time.time() < delay:
@@ -181,11 +112,17 @@ def down_to_up():
   # This function starts the leds from down to up
   print "activating beneden naar boven"
   threads = []
-  for trede in (range(1,14)):
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'white', '0', valw, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'red', '0', valr, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'blue', '0', valb, stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'green', '0', valg, stepsize)))
+  for trede in valgreen.keys():
+    for color in ('white','red','blue','green'):
+      if color == "red":
+        values = valred
+      elif color == "blue":
+        values = valblue
+      elif color == "green":
+        values = valgreen
+      else:
+        values = valwhite
+      threads.append(threading.Thread(target=fadenew, args=(trede, color, '0', values[trede], stepsize)))
 
   for thread in (threads):
     thread.start()
@@ -193,11 +130,6 @@ def down_to_up():
 
   for thread in threads:
     thread.join();
-
-  #fix('on')
-  #fade(rgbr, 'on', valr)
-  #fade(rgbg, 'on', valg)
-  #fade(rgbb, 'on', valb)
 
   delay = time.time() + timeout
   count = 1
@@ -219,32 +151,40 @@ def down_to_up():
 def shutdown_to_up():
   print "deactivating beneden naar boven"
   threads = []
-  for trede in (range(1,14)):
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'white', valw, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'red', valr, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'blue', valb, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'green', valg, '0', stepsize)))
+  for trede in valgreen.keys():
+    for color in ('white','red','blue','green'):
+      if color == "red":
+        values = valred
+      elif color == "blue":
+        values = valblue
+      elif color == "green":
+        values = valgreen
+      else:
+        values = valwhite
+      threads.append(threading.Thread(target=fadenew, args=(trede, color, values[trede], '0', stepsize)))
 
   for thread in (threads):
     thread.start()
     time.sleep(ndel)
-  time.sleep(5)
+#  time.sleep(5)
 
   for thread in threads:
     thread.join();
-  #fix('off')
-  #fade(rgbr, 'off', valr)
-  #fade(rgbg, 'off', valg)
-  #fade(rgbb, 'off', valb)
   
 def shutup_to_down():
   print "deactivating boven naar beneden"
   threads = []
-  for trede in (range(1,14)):
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'white', valw, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'red', valr, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'blue', valb, '0', stepsize)))
-    threads.append(threading.Thread(target=fadenew, args=(trede, 'green', valg, '0', stepsize)))
+  for trede in valgreen.keys():
+    for color in ('white','red','blue','green'):
+      if color == "red":
+        values = valred
+      elif color == "blue":
+        values = valblue
+      elif color == "green":
+        values = valgreen
+      else:
+        values = valwhite
+      threads.append(threading.Thread(target=fadenew, args=(trede, color, values[trede], '0', stepsize)))
 
   for thread in reversed(threads):
     thread.start()
@@ -252,11 +192,7 @@ def shutup_to_down():
 
   for thread in threads:
     thread.join();
-  #fix('off')
-  time.sleep(5)
-  #fade(rgbr, 'off', valr)
-  #fade(rgbg, 'off', valg)
-  #fade(rgbb, 'off', valb)
+#  time.sleep(5)
 
 def killshutdown():
   print "Detected motion, killing shutdown"
@@ -276,27 +212,29 @@ try:
       up_to_down()
       pshut = Process(target=shutup_to_down, args=())
       pshut.start()
-      while pshut.is_alive():
-        if GPIO.input(PIRB_PIN):
-          killshutdown()
-        if GPIO.input(PIRT_PIN):
-          killshutdown()
-        print "no motion noticed while shutting down"
-        time.sleep(wait)
+#      while pshut.is_alive():
+#        if GPIO.input(PIRB_PIN):
+#          killshutdown()
+#        if GPIO.input(PIRT_PIN):
+#          killshutdown()
+#        print "no motion noticed while shutting down"
+#        logging.debug('no motion noticed while shutting down')
+#        time.sleep(wait)
     if GPIO.input(PIRB_PIN):
       print "kleiner"
       logging.info('triggered motion bottom')
       down_to_up()
       pshut = Process(target=shutdown_to_up, args=())
       pshut.start()
-      while pshut.is_alive():
-        if GPIO.input(PIRB_PIN):
-          killshutdown()
-        if GPIO.input(PIRT_PIN):
-          killshutdown()
-        print "no motion noticed while shutting down"
-        time.sleep(wait)
-    logging.info('no motion noticed')
+#      while pshut.is_alive():
+#        if GPIO.input(PIRB_PIN):
+#          killshutdown()
+#        if GPIO.input(PIRT_PIN):
+#          killshutdown()
+#        print "no motion noticed while shutting down"
+#        logging.debug('no motion noticed while shutting down')
+#        time.sleep(wait)
+    logging.debug('no motion noticed')
     time.sleep(wait)
 
 except KeyboardInterrupt:
