@@ -22,7 +22,7 @@ else
     sleep 2
     nohup python /opt/stairlight/trap.py > /dev/null & 
 fi
-DIFF2=$(diff /opt/trap/variables.py /opt/trap/diffvariables.py)
+DIFF2=$(diff /opt/stairlight/variables.py /opt/stairlight/diffvariables.py)
 if [ "$DIFF2" != "" ]
 then
     echo "Het trap-script is opnieuw afgetrapt.(variables)"
